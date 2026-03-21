@@ -19,6 +19,37 @@ function App() {
     }
   }
 
+let handleSaveRequest = async () => {
+
+
+const request = {
+      userId: 1,
+      startDate: startDate,
+      endDate: endDate,
+      comment: comment,
+    }
+
+    const response = await fetch('http://localhost:5018/api/vacationrequests', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    })
+
+    if (!response.ok) {
+      alert('Failed to save request')
+      return
+    }
+
+    setStartDate('')
+    setEndDate('')
+    setComment('')
+
+    alert('Request saved')
+
+}
+
   return (
     <main className="page">
       <header className="page-header">
@@ -69,7 +100,7 @@ function App() {
           </div>
         </div>
 
-        <button className="primary-button" type="button">
+        <button className="primary-button" type="button" onClick={handleSaveRequest}>
           Save request
         </button>
       </section>
