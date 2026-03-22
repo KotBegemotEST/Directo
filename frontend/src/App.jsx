@@ -1,12 +1,35 @@
-import { useState } from 'react'
+import { useState,useEffect } from 'react'
 import './App.css'
 
 function App() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [comment, setComment] = useState('')
+  const [editingId, setEditingId] = useState(null)
 
+  const [requests, setRequests] = useState([])
+  
+  
+  useEffect(() => {
+    getRequests()
+  }, [])
+
+  
   let daysCount = ''
+  
+
+let handleEditRequest = (request) => {
+  setEditingId(request.id)
+  setStartDate(request.startDate)
+  setEndDate(request.endDate)
+  setComment(request.comment)
+
+
+
+  
+}
+
+
 
   if (startDate && endDate) {
     const start = new Date(startDate)
@@ -19,44 +42,83 @@ function App() {
     }
   }
 
-let handleSaveRequest = async () => {
+let hadleDeleteRequest = async (id) => {
+
+const response = await fetch(`https://localhost:7154/api/vacationrequests/${id}/delete`, {
+  method: 'POST',
+})
 
 
-const request = {
-      userId: 1,
-      startDate: startDate,
-      endDate: endDate,
-      comment: comment,
+  if (!response.ok) {
+    alert('Failed to delete request')
+    return
+  }
+
+  await getRequests()
+  alert('Request deleted')
+
+}
+
+let getRequests = async () => {
+
+    const response = await fetch('https://localhost:7154/api/vacationrequests')
+
+    if (!response.ok) {
+      alert('Failed to fetch requests')
+      return
     }
 
-    const response = await fetch('http://localhost:5018/api/vacationrequests', {
+    const data = await response.json()
+    setRequests(data)
+}
+
+let handleSaveRequest = async () => {
+  const request = {
+    userId: 1,
+    startDate: startDate,
+    endDate: endDate,
+    comment: comment,
+  }
+
+  let response
+
+  if (editingId === null) {
+    response = await fetch('https://localhost:7154/api/vacationrequests', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
     })
+  } else {
+    response = await fetch(`https://localhost:7154/api/vacationrequests/${editingId}/edit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    })
+  }
 
-    if (!response.ok) {
-      alert('Failed to save request')
-      return
-    }
+  if (!response.ok) {
+    alert('Failed to save request')
+    return
+  }
 
-    setStartDate('')
-    setEndDate('')
-    setComment('')
+  setEditingId(null)
+  setStartDate('')
+  setEndDate('')
+  setComment('')
 
-    alert('Request saved')
+  await getRequests()
 
+  alert('Request saved')
 }
 
   return (
     <main className="page">
       <header className="page-header">
         <h1>Vacation Requests</h1>
-        <p className="page-text">
-          Simple CRUD app for employee vacation requests.
-        </p>
       </header>
 
       <section className="form-section">
@@ -119,13 +181,34 @@ const request = {
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td colSpan="6" className="empty-row">
-                No requests yet
-              </td>
-            </tr>
-          </tbody>
+<tbody>
+  {requests.length === 0 ? (
+    <tr>
+      <td colSpan="6" className="empty-row">
+        No requests found
+      </td>
+    </tr>
+  ) : (
+    requests.map((request) => (
+      <tr key={request.id}>
+        <td>{request.id}</td>
+        <td>{request.userId}</td>
+        <td>{request.startDate}</td>
+        <td>{request.endDate}</td>
+        <td>{request.comment}</td>
+        <td>
+          <button className="delete-button" type="button" onClick={() => hadleDeleteRequest(request.id)}>
+            Delete
+          </button>
+          <button className="edit-button" type="button" onClick={() => handleEditRequest(request)}>
+            Edit
+          </button>
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
+
         </table>
       </section>
     </main>

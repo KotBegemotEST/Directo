@@ -91,6 +91,22 @@
   color: #64748b;
 }
 
+.delete-button {
+  margin-right: 8px;
+  background: #ef4444;
+}
+.delete-button:hover {
+  background: #dc2626;
+}
+
+.edit-button {
+  background: #2563eb;
+}
+.edit-button:hover {
+  background: #1d4ed8;
+}
+
+
 @media (max-width: 768px) {
   .form-grid {
     grid-template-columns: 1fr;
